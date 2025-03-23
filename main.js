@@ -91,5 +91,5 @@ fastify.listen({ port: websiteandapiport }, (err, address) => {
         console.error(err);
         process.exit(1);
     }
-    console.log(`Fastify API running at ${address}`);
+    console.log(`Matchamker running at ${address}`);
 });
