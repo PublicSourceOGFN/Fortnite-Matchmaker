@@ -10,7 +10,7 @@ const wss = new WebSocketServer({ port: wsPort });
 
 let queue = new Map();
 let webhookSent = false;
-const discordwebhook = "https://discord.com/api/webhooks/1353109019090485288/ChILcIH1S55G-29J1ph5kLQT1nnQFSDkLdIzNlSeYfM-sqnbRqchSoVqyS3Ql_CeDVqj";
+const discordwebhook = "ur_discord_webhook";
 
 async function sendWebhookMessage() {
     if (!webhookSent) {
