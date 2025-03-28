@@ -11,7 +11,7 @@ const wsPort = 81;
 const websiteandapiport = 3000;
 const wss = new WebSocketServer({ port: wsPort });
 
-let queue = new Map();
+let queue = new Map(); // THIS ARE NOT QUEUES THEN U EXPECT LIKE QUEUE SYSTEMS ON GAMESERVER ETC, THIS IS JUST A MAP FOR THE PLAYERS CONNECTED TO THE WEBSOCKET SERVER
 let webhookSent = false;
 const discordwebhook = "ur_discord_webhook";
 
