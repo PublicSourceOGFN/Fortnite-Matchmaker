@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const axios = require('axios');
 
 const fastify = Fastify({ logger: true });
+fastify.register(require('@fastify/cors'), { origin: '*' });
+
 const wsPort = 81;
 const websiteandapiport = 3000;
 const wss = new WebSocketServer({ port: wsPort });
@@ -19,18 +21,18 @@ async function sendWebhookMessage() {
                 content: "Matchmaker is open!",
                 embeds: [
                     {
-                        title: "Matchmaker Status", // u can change it dw
-                        description: "Works", // u can change it dw
-                        color: 3066993, // u can change it dw
-                        timestamp: new Date().toISOString(), // Do NOT touch 
+                        title: "Matchmaker Status", 
+                        description: "Works", 
+                        color: 3066993, 
+                        timestamp: new Date().toISOString(), 
                         footer: {
-                            text: "Fortnite Matchmaker System" // u can change it dw
+                            text: "Fortnite Matchmaker System" 
                         }
                     }
                 ]
             });
             webhookSent = true;
-            console.log("Discord webhook sent!"); // u can change the text if u want
+            console.log("Discord webhook sent!"); 
         } catch (error) {
             console.error("Failed to send Discord webhook:", error); 
         }
@@ -60,30 +62,35 @@ wss.on('connection', (ws) => {
 });
 
 function handlePlayer(ws, playerId) {
-    const ticketId = crypto.randomUUID();
-    const matchId = crypto.randomUUID();
-    const sessionId = crypto.randomUUID();
+    const timestamp = Date.now();
+    const ticketId = crypto.createHash('md5').update(`1${timestamp}`).digest('hex');
+    const matchId = crypto.createHash('md5').update(`2${timestamp}`).digest('hex');
+    const sessionId = crypto.createHash('md5').update(`3${timestamp}`).digest('hex');
     
     const messages = [
-        { delay: 500, state: 'Searching', payload: { playerId } },
-        { delay: 1500, state: 'InQueue', payload: { ticketId, position: queue.size } },
-        { delay: 4000, state: 'FindingMatch', payload: { estimatedWait: queue.size * 2 } },
-        { delay: 7000, state: 'MatchFound', payload: { matchId } },
-        { delay: 9000, name: 'GameStart', payload: { matchId, sessionId, joinDelay: 2 } }
+        { delay: 200, name: 'StatusUpdate', payload: { state: 'Connecting' } }, // 2 milliseconds lol 
+        { delay: 1000, name: 'StatusUpdate', payload: { state: 'Waiting', totalPlayers: queue.size, connectedPlayers: queue.size } }, // 1 second
+        { delay: 2000, name: 'StatusUpdate', payload: { state: 'Queued', ticketId, queuedPlayers: queue.size, estimatedWaitSec: queue.size * 2 } }, // 2 seconds
+        { delay: 20000, name: 'StatusUpdate', payload: { state: 'SessionAssignment', matchId, sessionId } }, // 20 seconds
+        { delay: 23000, name: 'Play', payload: { matchId, sessionId, joinDelaySec: 1 } } // 23 seconds
     ];
 
-    messages.forEach(({ delay, state, name = 'StatusUpdate', payload = {} }) => {
+    messages.forEach(({ delay, name, payload }) => {
         setTimeout(() => {
             if (ws.readyState === ws.OPEN) {
-                console.log(`Player ${playerId}: ${state}`);
-                ws.send(JSON.stringify({ name, payload: { state, ...payload } }));
+                console.log(`Player ${playerId}: ${payload.state}`);
+                ws.send(JSON.stringify({ name, payload }));
             }
         }, delay);
     });
 }
 
+fastify.get('/', async (request, reply) => {
+    return { message: "Matchmaker is running!" };
+});
+
 fastify.get('/status', async (request, reply) => {
-    return { activePlayers: queue.size }; // yeah
+    return { activePlayers: queue.size };
 });
 
 fastify.listen({ port: websiteandapiport }, (err, address) => {
@@ -91,5 +98,5 @@ fastify.listen({ port: websiteandapiport }, (err, address) => {
         console.error(err);
         process.exit(1);
     }
-    console.log(`Matchamker running at ${address}`);
+    console.log(`Matchmaker running at ${address}`);
 });
