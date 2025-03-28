@@ -5,7 +5,7 @@ const axios = require('axios');
 
 const fastify = Fastify({
     logger: {
-        level: 'warn'  // This will suppress info and debug logs, only showing warn and error logs
+        level: 'warn'  
     }
 });
 
