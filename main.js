@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const axios = require('axios');
 
 const fastify = Fastify({ logger: true });
+const ticketMap = new Map(); 
 fastify.register(require('@fastify/cors'), { origin: '*' });
 
 const wsPort = 81;
@@ -89,8 +90,19 @@ fastify.get('/', async (request, reply) => {
     return { message: "Matchmaker is running!" };
 });
 
-fastify.get('/status', async (request, reply) => {
+fastify.get('/status', async (reply) => {
     return { activePlayers: queue.size };
+});
+
+fastify.get('/ticketid', async (request, reply) => {
+    const clientIp = request.ip; 
+
+    if (!ticketMap.has(clientIp)) {
+        const ticketId = crypto.createHash('md5').update(`1${Date.now()}`).digest('hex');
+        ticketMap.set(clientIp, ticketId);
+    }
+
+    return { ticketId: ticketMap.get(clientIp) };
 });
 
 fastify.listen({ port: websiteandapiport }, (err, address) => {
