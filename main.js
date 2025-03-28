@@ -3,7 +3,12 @@ const { WebSocketServer } = require('ws');
 const crypto = require('crypto');
 const axios = require('axios');
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({
+    logger: {
+        level: 'warn'  // This will suppress info and debug logs, only showing warn and error logs
+    }
+});
+
 const ticketMap = new Map(); 
 fastify.register(require('@fastify/cors'), { origin: '*' });
 
@@ -110,5 +115,5 @@ fastify.listen({ port: websiteandapiport }, (err, address) => {
         console.error(err);
         process.exit(1);
     }
-    console.log(`Matchmaker running at ${address}`);
+    console.log(`Matchmaker running at 127.0.0.1:${websiteandapiport}`);
 });
